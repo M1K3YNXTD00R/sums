@@ -9,17 +9,24 @@
         canvas { display: block; }
         #score { position: absolute; top: 10px; left: 10px; font-size: 20px; }
         #pauseBtn { position: absolute; top: 10px; right: 10px; font-size: 20px; padding: 5px; cursor: pointer; }
+        #retryBtn { display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 20px; padding: 10px; cursor: pointer; background: white; color: black; border: none; }
     </style>
 </head>
 <body>
     <div id="score">Score: 0</div>
     <button id="pauseBtn">Pause</button>
+    <button id="retryBtn" onclick="restartGame()">Retry</button>
     <canvas id="gameCanvas"></canvas>
     <script>
-        let playerName = prompt("Enter a 4-digit name:");
-        while (!playerName || playerName.length !== 4) {
-            playerName = prompt("Name must be exactly 4 characters:");
+        function getPlayerName() {
+            let name = prompt("Enter a 4-digit name:");
+            while (!name || name.length !== 4) {
+                name = prompt("Name must be exactly 4 characters:");
+            }
+            return name;
         }
+
+        let playerName = getPlayerName();
         
         const canvas = document.getElementById("gameCanvas");
         const ctx = canvas.getContext("2d");
@@ -123,13 +130,26 @@
                 });
                 
                 if (alien.y > canvas.height) {
-                    alert(`Game Over, ${playerName}! Final Score: ${score}`);
-                    document.location.reload();
+                    gameOver();
                 }
             });
             requestAnimationFrame(update);
         }
         update();
+        
+        function gameOver() {
+            document.getElementById("retryBtn").style.display = "block";
+        }
+        
+        function restartGame() {
+            document.getElementById("retryBtn").style.display = "none";
+            playerName = getPlayerName();
+            score = 0;
+            document.getElementById("score").innerText = `${playerName} - Score: ${score}`;
+            aliens.length = 0;
+            bullets.length = 0;
+            update();
+        }
         
         document.addEventListener("keydown", (event) => {
             keys[event.key] = true;
@@ -148,3 +168,4 @@
     </script>
 </body>
 </html>
+
