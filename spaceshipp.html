@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spaceship Shooter</title>
+    <style>
+        body { margin: 0; overflow: hidden; background: black; color: white; text-align: center; }
+        canvas { display: block; }
+        #score { position: absolute; top: 10px; left: 10px; font-size: 20px; }
+        #pauseBtn { position: absolute; top: 10px; right: 10px; font-size: 20px; padding: 5px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <div id="score">Score: 0</div>
+    <button id="pauseBtn">Pause</button>
+    <canvas id="gameCanvas"></canvas>
+    <script>
+        let playerName = prompt("Enter a 4-digit name:");
+        while (!playerName || playerName.length !== 4) {
+            playerName = prompt("Name must be exactly 4 characters:");
+        }
+        
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        
+        let score = 0;
+        let isPaused = false;
+        document.getElementById("score").innerText = `${playerName} - Score: ${score}`;
+        
+        class Spaceship {
+            constructor() {
+                this.width = 50;
+                this.height = 50;
+                this.x = canvas.width / 2 - this.width / 2;
+                this.y = canvas.height - this.height - 20;
+                this.speed = 8;
+            }
+            draw() {
+                ctx.fillStyle = "white";
+                ctx.fillRect(this.x, this.y, this.width, this.height);
+            }
+            move(dir) {
+                if (dir === 'left' && this.x > 0) this.x -= this.speed;
+                if (dir === 'right' && this.x + this.width < canvas.width) this.x += this.speed;
+            }
+        }
+        
+        class Bullet {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+                this.width = 5;
+                this.height = 10;
+                this.speed = 7;
+            }
+            draw() {
+                ctx.fillStyle = "red";
+                ctx.fillRect(this.x, this.y, this.width, this.height);
+            }
+            move() {
+                this.y -= this.speed;
+            }
+        }
+        
+        class Alien {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+                this.width = 40;
+                this.height = 40;
+                this.speed = 2;
+            }
+            draw() {
+                ctx.fillStyle = "green";
+                ctx.fillRect(this.x, this.y, this.width, this.height);
+            }
+            move() {
+                this.y += this.speed;
+            }
+        }
+        
+        const spaceship = new Spaceship();
+        const bullets = [];
+        const aliens = [];
+        const keys = {};
+        
+        function spawnAliens() {
+            if (!isPaused) {
+                const x = Math.random() * (canvas.width - 40);
+                aliens.push(new Alien(x, 0));
+            }
+        }
+        setInterval(spawnAliens, 1000);
+        
+        function update() {
+            if (isPaused) return;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            spaceship.draw();
+            
+            if (keys["ArrowLeft"]) spaceship.move('left');
+            if (keys["ArrowRight"]) spaceship.move('right');
+            
+            bullets.forEach((bullet, index) => {
+                bullet.move();
+                bullet.draw();
+                if (bullet.y < 0) bullets.splice(index, 1);
+            });
+            
+            aliens.forEach((alien, aIndex) => {
+                alien.move();
+                alien.draw();
+                
+                bullets.forEach((bullet, bIndex) => {
+                    if (bullet.x < alien.x + alien.width && bullet.x + bullet.width > alien.x && bullet.y < alien.y + alien.height && bullet.y + bullet.height > alien.y) {
+                        aliens.splice(aIndex, 1);
+                        bullets.splice(bIndex, 1);
+                        score += 10;
+                        document.getElementById("score").innerText = `${playerName} - Score: ${score}`;
+                    }
+                });
+                
+                if (alien.y > canvas.height) {
+                    alert(`Game Over, ${playerName}! Final Score: ${score}`);
+                    document.location.reload();
+                }
+            });
+            requestAnimationFrame(update);
+        }
+        update();
+        
+        document.addEventListener("keydown", (event) => {
+            keys[event.key] = true;
+            if (event.key === " ") bullets.push(new Bullet(spaceship.x + spaceship.width / 2 - 2.5, spaceship.y));
+            if (event.key === "p") isPaused = !isPaused;
+        });
+        
+        document.addEventListener("keyup", (event) => {
+            keys[event.key] = false;
+        });
+        
+        document.getElementById("pauseBtn").addEventListener("click", () => {
+            isPaused = !isPaused;
+            if (!isPaused) update();
+        });
+    </script>
+</body>
+</html>
