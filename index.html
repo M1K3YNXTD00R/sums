@@ -40,23 +40,24 @@
         
         class Spaceship {
             constructor() {
-                this.size = 50;
-                this.x = canvas.width / 2 - this.size / 2;
-                this.y = canvas.height - this.size - 20;
+                this.width = 50;
+                this.height = 60;
+                this.x = canvas.width / 2 - this.width / 2;
+                this.y = canvas.height - this.height - 20;
                 this.speed = 8;
             }
             draw() {
                 ctx.fillStyle = "white";
                 ctx.beginPath();
-                ctx.moveTo(this.x, this.y + this.size);
-                ctx.lineTo(this.x + this.size / 2, this.y);
-                ctx.lineTo(this.x + this.size, this.y + this.size);
+                ctx.moveTo(this.x + this.width / 2, this.y);
+                ctx.lineTo(this.x, this.y + this.height);
+                ctx.lineTo(this.x + this.width, this.y + this.height);
                 ctx.closePath();
                 ctx.fill();
             }
             move(dir) {
                 if (dir === 'left' && this.x > 0) this.x -= this.speed;
-                if (dir === 'right' && this.x + this.size < canvas.width) this.x += this.speed;
+                if (dir === 'right' && this.x + this.width < canvas.width) this.x += this.speed;
             }
         }
         
@@ -65,11 +66,11 @@
                 this.x = x;
                 this.y = y;
                 this.width = 5;
-                this.height = 10;
+                this.height = 15;
                 this.speed = 7;
             }
             draw() {
-                ctx.fillStyle = "red";
+                ctx.fillStyle = "pink";
                 ctx.fillRect(this.x, this.y, this.width, this.height);
             }
             move() {
@@ -81,13 +82,17 @@
             constructor(x, y) {
                 this.x = x;
                 this.y = y;
-                this.radius = 20;
+                this.width = 50;
+                this.height = 40;
                 this.speed = 2;
             }
             draw() {
                 ctx.fillStyle = "green";
                 ctx.beginPath();
-                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.moveTo(this.x + this.width / 2, this.y);
+                ctx.lineTo(this.x, this.y + this.height);
+                ctx.lineTo(this.x + this.width, this.y + this.height);
+                ctx.closePath();
                 ctx.fill();
             }
             move() {
@@ -102,7 +107,7 @@
         
         function spawnAliens() {
             if (!isPaused && !gameOverState) {
-                const x = Math.random() * (canvas.width - 40) + 20;
+                const x = Math.random() * (canvas.width - 50);
                 aliens.push(new Alien(x, 0));
             }
         }
@@ -127,7 +132,7 @@
                 alien.draw();
                 
                 bullets.forEach((bullet, bIndex) => {
-                    if (Math.hypot(bullet.x - alien.x, bullet.y - alien.y) < alien.radius) {
+                    if (bullet.x < alien.x + alien.width && bullet.x + bullet.width > alien.x && bullet.y < alien.y + alien.height && bullet.y + bullet.height > alien.y) {
                         aliens.splice(aIndex, 1);
                         bullets.splice(bIndex, 1);
                         score += 10;
@@ -163,7 +168,7 @@
         
         document.addEventListener("keydown", (event) => {
             keys[event.key] = true;
-            if (event.key === " ") bullets.push(new Bullet(spaceship.x + spaceship.size / 2 - 2.5, spaceship.y));
+            if (event.key === " ") bullets.push(new Bullet(spaceship.x + spaceship.width / 2 - 2.5, spaceship.y));
             if (event.key === "p") isPaused = !isPaused;
         });
         
